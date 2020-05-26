@@ -1,0 +1,213 @@
+class country{
+    constructor(data){
+        this.svg = data.svg;
+        this.name = data.name;
+        this.iso = data.iso;
+        this.imports = [];
+        this.exports = [];
+        this.subscribed = false;
+    }
+}
+
+class tradeGraph{
+    constructor(){
+        this.nodes = [];
+        this.edges = {};
+    }
+
+    addNode = function(node){
+        this.nodes.forEach(oldNode => this.edges[oldNode].push(node));
+        this.edges[node] = this.nodes;
+        this.nodes.push(node);       
+    }
+}
+
+
+class UIControl{
+    
+    static displayData(country){
+        UIControl.removeLoadingBar();
+        nameAndYear[0].style.color = 'white';
+        nameAndYear[0].innerHTML = country.name;        
+        UIControl.createCanvas();
+        let ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
+        UIControl.createChart(ctx,country);
+        
+    }
+
+    static createCanvas(){
+        UIControl.removeAlreadyDisplayedData();
+        displayBox.appendChild(document.createElement("canvas"));        
+    }
+
+    static createChart(ctx,country){
+        let values = []; let names = [];
+        country.exports.forEach(element =>{
+            values.push(element.value);
+            names.push(element.name);
+        });
+        let pieChart = new Chart(ctx,{
+            type: 'pie',
+            data: {
+                datasets:[{
+                    data: values,
+                    backgroundColor: ['#F2F3F4', '#222222', '#F3C300', '#875692', '#F38400',
+                                      '#A1CAF1', '#BE0032', '#C2B280', '#848482', '#008856',
+                                      '#E68FAC', '#0067A5', '#F99379', '#604E97', '#F6A600', 
+                                      '#B3446C', '#DCD300', '#882D17', '#8DB600', '#654522', 
+                                      '#E25822', '#2B3D26']
+                }],
+                labels: names
+            },
+            options:{
+                responsive: false,
+                legend:{
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: country.name + ': Global Exports in ' + document.getElementById("setYear").value
+                }
+            }
+        }            
+    );      
+    }
+
+    static removeAlreadyDisplayedData(){
+        let canvas = document.getElementsByTagName('canvas');
+        if(canvas.length){
+            canvas[0].remove();
+        }        
+    }
+
+    static highlightCountry(evt,handle){         
+        if((handle.subscribed === false) == true){            
+            evt.target.style.fill = 'green';
+            evt.target.querySelectorAll('*').forEach(element =>{
+                element.style.fill = 'green';
+            });
+            if(nameAndYear[0].innerHTML != handle.name){
+                nameAndYear[2].innerHTML = handle.name;
+                nameAndYear[2].style.color = 'red';
+            }
+        }
+        else{
+            UIControl.displayData(handle);
+        }
+    }
+
+    static unselectCountry(evt, handle){
+        if(!handle.subscribed){
+            evt.target.style.fill = '#203030';
+            evt.target.querySelectorAll('*').forEach(element =>{
+                element.style.fill = '#203030';
+            });
+        }
+    }
+
+    static selectCountry(evt, handle){
+        if((handle.subscribed === false) == true){      
+            tradeFlow.subscribe(handle);
+            UIControl.highlightCountry(evt,handle);
+            handle.subscribed = true;
+            nameAndYear[0].style.color = 'white';
+        }    
+        else{
+            handle.subscribed = false;            
+            tradeFlow.unsubscribe(handle);
+            UIControl.unselectCountry(evt, handle);                        
+        }
+    }
+
+    static displayError(err){
+        nameAndYear[0].style.color = 'red';
+        nameAndYear[0].innerHTML = 'Error ' + err;        
+    }
+
+    static loadingAnimation(){
+        this.removeLoadingBar();
+        UIControl.removeAlreadyDisplayedData();
+        let loader = document.createElement("div");
+        loader.className = 'progress';
+        let loadingBar = document.createElement("div");
+        loadingBar.className = "indeterminate";
+        loader.appendChild(loadingBar);
+        displayBox.appendChild(loader);
+    }
+
+    static removeLoadingBar(){
+        if(document.getElementsByClassName('progress')[0] != undefined) document.getElementsByClassName('progress')[0].remove();
+    }
+}
+
+
+
+/* <div class="progress">
+<div class="indeterminate"></div>
+</div> */
+
+
+class tradeFlowManager{
+    constructor(){
+        this.activeCountries = [];
+        this.graph = new tradeGraph;
+        this.itemIds = [];
+        this.shortIds = [];
+    }
+
+    subscribe = function(country){
+        this.activeCountries.push(country);
+        this.graph.addNode(country);
+        this.getData(country);    
+    }
+
+    unsubscribe = function(country){
+        this.activeCountries.splice(this.activeCountries.indexOf(country),1);
+        if(this.activeCountries.length == 0){
+            UIControl.removeAlreadyDisplayedData();
+        }
+        else{
+            let mostRecent = this.activeCountries[this.activeCountries.length-1]
+            UIControl.displayData(mostRecent);
+        }
+    }
+
+    notify = function(){
+        this.activeCountries.forEach(element => this.getData(element));
+    }
+
+    getData = function(country){
+        UIControl.loadingAnimation();
+        let year = document.getElementById("setYear").value;
+        const apiCall = new oecCall;
+        apiCall.getGlobalImportsAndExports(country.iso, year).then(importsAndExports =>{
+            //Todo: get local one to one relationsships!
+            let globalTradeFlow = importsAndExports.data;
+            let exportsWithShortestIds = [];
+            let importsWithShortestIds = [];
+            for(let i = 0; i < 22; i++) exportsWithShortestIds.push({name: this.shortIds[i].name, value: 0});
+            for(let i = 0; i < 22; i++) importsWithShortestIds.push({name: this.shortIds[i].name, value: 0});
+            
+            for(let j = 0; j < this.shortIds.length; j++){
+                for(let i = 0; i < globalTradeFlow.length; i++){
+                    let candidate = globalTradeFlow[i];
+                    if(!isNaN(candidate.export_val) && candidate.hs02_id.substr(0,2) == this.shortIds[j].id){
+                        exportsWithShortestIds[j].value += candidate.export_val;
+                    }
+                    if(!isNaN(candidate.import_val) && candidate.hs02_id.substr(0,2) == this.shortIds[j].id){
+                        importsWithShortestIds[j].value += candidate.import_val;
+                    }
+                }
+                exportsWithShortestIds[j].value = Math.floor(exportsWithShortestIds[j].value);
+                importsWithShortestIds[j].value = Math.floor(importsWithShortestIds[j].value);
+            }
+            
+            country.exports = exportsWithShortestIds;
+            country.imports = importsWithShortestIds;
+            UIControl.displayData(country);
+        })
+        .catch(err =>{
+            UIControl.displayError(err);
+        });
+    }
+}

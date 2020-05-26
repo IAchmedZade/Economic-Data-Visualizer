@@ -1,4 +1,4 @@
-# Economic-Data-Visualizer
+# Economic Data Visualizer
 *Interactive World Map for Visualization of OEC Data*
 
 

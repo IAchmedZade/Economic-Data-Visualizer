@@ -20,6 +20,30 @@ class tradeGraph{
         this.edges[node] = this.nodes;
         this.nodes.push(node);       
     }
+
+    removeNode = function(node){
+        this.removeEdges;
+        let n = this.nodes.length;
+        for(let i = 0; i < n; i++){
+            if(this.nodes[i] === node){
+                this.nodes[i].splice(i,1);
+                break;
+            }
+        }
+    }
+
+    removeEdges = function (node) {
+        this.edges[node].forEach(neihgbor => {
+            let n = this.edges[neihgbor].length;
+            for(let i = 0; i < n; i++){
+                if(this.edges[neihgbor][i] === node){
+                    this.edges[neighbors].splice(i,1);
+                    break;
+                }
+            }
+        });
+        delete(this.edges[node]);
+    }
 }
 
 
@@ -119,11 +143,6 @@ class UIControl{
         }
     }
 
-    static displayError(err){
-        nameAndYear[0].style.color = 'red';
-        nameAndYear[0].innerHTML = 'Error ' + err;        
-    }
-
     static loadingAnimation(){
         this.removeLoadingBar();
         UIControl.removeAlreadyDisplayedData();
@@ -137,6 +156,13 @@ class UIControl{
 
     static removeLoadingBar(){
         if(document.getElementsByClassName('progress')[0] != undefined) document.getElementsByClassName('progress')[0].remove();
+    }
+
+    static message(msg){        
+        nameAndYear[3].innerHTML = msg;
+        setTimeout(function(){
+            nameAndYear[3].innerHTML = '';
+        },3000);
     }
 }
 
@@ -181,6 +207,17 @@ class tradeFlowManager{
     getData = function(country){
         UIControl.loadingAnimation();
         let year = document.getElementById("setYear").value;
+        if(!tradeMode.checked){
+            this.getGlobalData(country,year);
+        }
+        else{
+            //Implement trade mode furhter!
+            UIControl.removeLoadingBar();
+            UIControl.message("Trade Mode is still under construction! PLease use global mode for now.");
+        }
+    }
+
+    getGlobalData = function(country,year){
         const apiCall = new oecCall;
         apiCall.getGlobalImportsAndExports(country.iso, year).then(importsAndExports =>{
             let globalTradeFlow = importsAndExports.data;
@@ -188,9 +225,9 @@ class tradeFlowManager{
             UIControl.displayData(country);
         })
         .catch(err =>{
-            UIControl.displayError(err);
+            UIControl.message(err);
         });
-    }    
+    }
 
     bundleDataByChapters = function(globalTradeFlow,country){
         

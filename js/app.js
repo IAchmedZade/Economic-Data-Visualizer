@@ -16,7 +16,7 @@ document.onreadystatechange = function () {
 }
 
 let nameAndYear = [document.getElementById('name'),
-                 document.getElementById('year'),document.getElementById('nextCountry')];
+                 document.getElementById('year'),document.getElementById('nextCountry'), document.getElementById('message')];
 
 
 

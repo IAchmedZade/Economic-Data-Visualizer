@@ -122,7 +122,7 @@ class UIControl{
 
     static unselectCountry(evt, handle){
         if(!handle.subscribed){
-            evt.target.style.fill = '#203030';
+            evt.target.style.fill = '#203030';            
             evt.target.querySelectorAll('*').forEach(element =>{
                 element.style.fill = '#203030';
             });
@@ -133,6 +133,10 @@ class UIControl{
         if((handle.subscribed === false) == true){      
             tradeFlow.subscribe(handle);
             UIControl.highlightCountry(evt,handle);
+            if(tradeMode.checked) {
+                UIControl.unselectCountry();
+                return;
+            }
             handle.subscribed = true;
             nameAndYear[0].style.color = 'white';
         }    
@@ -225,6 +229,7 @@ class tradeFlowManager{
             UIControl.displayData(country);
         })
         .catch(err =>{
+            UIControl.unselectCountry(null,country);
             UIControl.message(err);
         });
     }

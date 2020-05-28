@@ -134,7 +134,7 @@ class UIControl{
             tradeFlow.subscribe(handle);
             UIControl.highlightCountry(evt,handle);
             if(tradeMode.checked) {
-                UIControl.unselectCountry();
+                UIControl.unselectCountry(evt,handle);
                 return;
             }
             handle.subscribed = true;

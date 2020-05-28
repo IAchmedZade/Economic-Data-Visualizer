@@ -2,6 +2,7 @@ const map = document.querySelector('.myMap');
 const table = document.getElementById('tabulatedData');
 const displayBox = document.getElementById('displayBox');
 const updateButton = document.getElementById('updateBtn');
+const tradeMode = document.getElementById("tradeMode");
 
 var worldMap;
 var countries = [];
@@ -19,8 +20,7 @@ let nameAndYear = [document.getElementById('name'),
 
 
 
-async function getLocalData(){ //Better naming here please!!
-
+async function getLocalData(){
     const countryIds = await fetch('data/countryIds.txt');
     const response = await countryIds.json();
 

@@ -153,6 +153,8 @@ class tradeFlowManager{
         this.graph = new tradeGraph;
         this.itemIds = [];
         this.shortIds = [];
+        let exportsWithShortestIds = [];
+        let importsWithShortestIds = [];
     }
 
     subscribe = function(country){
@@ -181,33 +183,44 @@ class tradeFlowManager{
         let year = document.getElementById("setYear").value;
         const apiCall = new oecCall;
         apiCall.getGlobalImportsAndExports(country.iso, year).then(importsAndExports =>{
-            //Todo: get local one to one relationsships!
             let globalTradeFlow = importsAndExports.data;
-            let exportsWithShortestIds = [];
-            let importsWithShortestIds = [];
-            for(let i = 0; i < 22; i++) exportsWithShortestIds.push({name: this.shortIds[i].name, value: 0});
-            for(let i = 0; i < 22; i++) importsWithShortestIds.push({name: this.shortIds[i].name, value: 0});
-            
-            for(let j = 0; j < this.shortIds.length; j++){
-                for(let i = 0; i < globalTradeFlow.length; i++){
-                    let candidate = globalTradeFlow[i];
-                    if(!isNaN(candidate.export_val) && candidate.hs02_id.substr(0,2) == this.shortIds[j].id){
-                        exportsWithShortestIds[j].value += candidate.export_val;
-                    }
-                    if(!isNaN(candidate.import_val) && candidate.hs02_id.substr(0,2) == this.shortIds[j].id){
-                        importsWithShortestIds[j].value += candidate.import_val;
-                    }
-                }
-                exportsWithShortestIds[j].value = Math.floor(exportsWithShortestIds[j].value);
-                importsWithShortestIds[j].value = Math.floor(importsWithShortestIds[j].value);
-            }
-            
-            country.exports = exportsWithShortestIds;
-            country.imports = importsWithShortestIds;
+            this.bundleDataByChapters(globalTradeFlow,country);
             UIControl.displayData(country);
         })
         .catch(err =>{
             UIControl.displayError(err);
         });
+    }    
+
+    bundleDataByChapters = function(globalTradeFlow,country){
+        
+        country.exports = this.generateEmptyGoodArray();
+        country.imports = this.generateEmptyGoodArray();
+        
+        this.bundleDataByChaptersHelper(globalTradeFlow, country.exports, country.imports);
+        
+        
+    }
+
+    generateEmptyGoodArray = function(){
+        let GoodArray = [];
+        for(let i = 0; i < 22; i++) GoodArray.push({name: this.shortIds[i].name, value: 0});
+        return GoodArray;
+    }
+
+    bundleDataByChaptersHelper = function(globalTradeFlow, exports,imports){
+        for(let j = 0; j < this.shortIds.length; j++){
+            for(let i = 0; i < globalTradeFlow.length; i++){
+                let candidate = globalTradeFlow[i];
+                if(!isNaN(candidate.export_val) && candidate.hs02_id.substr(0,2) == this.shortIds[j].id){
+                    exports[j].value += candidate.export_val;
+                }
+                if(!isNaN(candidate.import_val) && candidate.hs02_id.substr(0,2) == this.shortIds[j].id){
+                    imports[j].value += candidate.import_val;
+                }
+            }
+            exports[j].value = Math.floor(exports[j].value);
+            imports[j].value = Math.floor(imports[j].value);
+        }
     }
 }

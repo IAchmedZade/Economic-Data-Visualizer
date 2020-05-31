@@ -10,7 +10,7 @@ const tradeFlow = new tradeFlowManager();
 
 document.onreadystatechange = function () {
     if(document.readyState == 'complete'){
-        worldMap = map.contentDocument;
+        worldMap = map.getSVGDocument();
         main();
     }
 }

@@ -166,6 +166,7 @@ class UIControl{
         nameAndYear[3].innerHTML = msg;
         setTimeout(function(){
             nameAndYear[3].innerHTML = '';
+            UIControl.removeLoadingBar();
         },3000);
     }
 }

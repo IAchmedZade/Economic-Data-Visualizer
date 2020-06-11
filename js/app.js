@@ -29,8 +29,6 @@ async function getLocalData(){
     return {countryData: response, goodsData: responseGoods};
 }
 
-
-
 function main(){
     getLocalData().then(function(localData){
         tradeFlow.itemIds= localData.goodsData.data;

@@ -12,20 +12,21 @@ class oecCall{
             goodIds: goodIds
         }
     }
-    async getImports(origin, destination, year){
-        const importPromise = await fetch(destination ?`https://oec.world/hs02/import/${year}/${origin}/${destination}/show/` :
-                                                       `https://oec.world/hs02/import/${year}/${origin}/all/show/`);
-        const imports = await importPromise.json();
+    // The API has been rerouted to legacy.oec.world !!
+    //
+    // async getImports(origin, destination, year){
+    //     const importPromise = await fetch(destination ?`https://oec.world/hs02/import/${year}/${origin}/${destination}/show/` :
+    //                                                    `https://oec.world/hs02/import/${year}/${origin}/all/show/`);
+    //     const imports = await importPromise.json();
 
-        return imports;
-    }
+    //     return imports;
+    // }
     
+    // Structure of API:
+    // `https://legacy.oec.world/hs02/${year}/export/${origin}/${destination}/show`
 
-    // `https://oec.world/hs02/${year}/export/${origin}/${destination}/show`
-
-    async getExports(origin, destination, year){
-        const exportPromise = await fetch(destination ?`https://oec.world/hs02/export/${year}/${origin}/${destination}/show/` :
-                                                       `https://oec.world/hs02/export/${year}/${origin}/all/show/`);
+    async getExportsBetweenTwoCountries(origin, destination, year){
+        const exportPromise = await fetch(`https://legacy.oec.world/hs02/export/${year}/${origin}/${destination}/show/`);
         const exports = await exportPromise.json();
 
         return exports;
@@ -38,7 +39,7 @@ class oecCall{
         if(importsAndExportsPromise.status !== 200){
             return importsAndExportsPromise;
         }
-        console.log(importsAndExportsPromise);
+        // console.log(importsAndExportsPromise);
         const importsAndExports = await importsAndExportsPromise.json();
 
         return importsAndExports;

@@ -9,44 +9,6 @@ class country{
     }
 }
 
-class tradeGraph{
-    constructor(){
-        this.nodes = [];
-        this.edges = {};
-    }
-
-    addNode = function(node){
-        this.nodes.forEach(oldNode => this.edges[oldNode].push(node));
-        this.edges[node] = this.nodes;
-        this.nodes.push(node);       
-    }
-
-    removeNode = function(node){
-        this.removeEdges;
-        let n = this.nodes.length;
-        for(let i = 0; i < n; i++){
-            if(this.nodes[i] === node){
-                this.nodes[i].splice(i,1);
-                break;
-            }
-        }
-    }
-
-    removeEdges = function (node) {
-        this.edges[node].forEach(neihgbor => {
-            let n = this.edges[neihgbor].length;
-            for(let i = 0; i < n; i++){
-                if(this.edges[neihgbor][i] === node){
-                    this.edges[neighbors].splice(i,1);
-                    break;
-                }
-            }
-        });
-        delete(this.edges[node]);
-    }
-}
-
-
 class UIControl{
     
     static displayData(country){
@@ -122,11 +84,22 @@ class UIControl{
 
     static unselectCountry(evt, handle){
         if(!handle.subscribed){
-            evt.target.style.fill = '#203030';            
-            evt.target.querySelectorAll('*').forEach(element =>{
-                element.style.fill = '#203030';
-            });
+            if(evt == null){
+                console.log('Evt was null');
+                UIControl.colorGrey(handle);
+            }
+            else{
+                UIControl.colorGrey(evt.target);
+            }
+            
         }
+    }
+
+    static colorGrey(htmlItem){
+        htmlItem.style.fill = '#203030';            
+        htmlItem.querySelectorAll('*').forEach(element =>{
+            element.style.fill = '#203030';
+        });
     }
 
     static selectCountry(evt, handle){
@@ -172,25 +145,28 @@ class UIControl{
 }
 
 
-
-/* <div class="progress">
-<div class="indeterminate"></div>
-</div> */
-
-
 class tradeFlowManager{
     constructor(){
         this.activeCountries = [];
-        this.graph = new tradeGraph;
         this.itemIds = [];
         this.shortIds = [];
-        let exportsWithShortestIds = [];
-        let importsWithShortestIds = [];
+        this.maxSize = 5;
     }
 
     subscribe = function(country){
-        this.activeCountries.push(country);
-        this.graph.addNode(country);
+        let found = false;
+        this.activeCountries.forEach(element => {
+            if(element.name == country.name){
+                found = true;
+            }
+        });
+        if(!found){
+            this.activeCountries.push(country);
+        }
+        if(this.activeCountries.length > 5){
+            UIControl.colorGrey(this.activeCountries[0].svg);
+            this.activeCountries.splice(0,1);
+        }
         this.getData(country);    
     }
 
@@ -217,14 +193,25 @@ class tradeFlowManager{
         }
         else{
             //Implement trade mode furhter!
+
+            for(let i = 0; i < this.activeCountries.length-1; i++){
+                for(let j = i+1; j < this.activeCountries.length; j++){
+                    this.getLocalData(this.activeCountries[i],this.activeCountries[j]);
+                }
+            }
+
             UIControl.removeLoadingBar();
             UIControl.message("Trade Mode is still under construction! PLease use global mode for now.");
         }
     }
 
+    getLocalData = function(exporter, importer){
+        console.log(exporter, importer);
+    }
+
     getGlobalData = function(country,year){
         const apiCall = new oecCall;
-        apiCall.getGlobalImportsAndExports(country.iso, year).then(importsAndExports =>{
+        apiCall.getGlobalImportsAndExports(country.iso, year).then(importsAndExports =>{            
             let globalTradeFlow = importsAndExports.data;
             this.bundleDataByChapters(globalTradeFlow,country);
             UIControl.displayData(country);

@@ -33,10 +33,12 @@ class oecCall{
 
     async getGlobalImportsAndExports(origin, year){
         if(! (year < 2018 && year > 2002)) year = 2017;
-        const importsAndExportsPromise = await fetch(`https://oec.world/hs02/export/${year}/${origin}/all/show/`);
+        const importsAndExportsPromise = await fetch(`https://legacy.oec.world/hs02/export/${year}/${origin}/all/show/`);
+        
         if(importsAndExportsPromise.status !== 200){
             return importsAndExportsPromise;
         }
+        console.log(importsAndExportsPromise);
         const importsAndExports = await importsAndExportsPromise.json();
 
         return importsAndExports;

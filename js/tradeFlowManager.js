@@ -151,6 +151,7 @@ class tradeFlowManager{
         this.itemIds = [];
         this.shortIds = [];
         this.maxSize = 5;
+        this.apiCall = new oecCall;
     }
 
     subscribe = function(country){
@@ -192,26 +193,32 @@ class tradeFlowManager{
             this.getGlobalData(country,year);
         }
         else{
-            //Implement trade mode furhter!
-
+            //Implement trade mode furhter!            
+            /*year = 2012;
             for(let i = 0; i < this.activeCountries.length-1; i++){
                 for(let j = i+1; j < this.activeCountries.length; j++){
-                    this.getLocalData(this.activeCountries[i],this.activeCountries[j]);
+                    this.getLocalData(this.activeCountries[i],this.activeCountries[j], year);
                 }
             }
-
+            */
             UIControl.removeLoadingBar();
             UIControl.message("Trade Mode is still under construction! PLease use global mode for now.");
         }
     }
 
-    getLocalData = function(exporter, importer){
-        console.log(exporter, importer);
+
+    // API still exhibiting strange behaviour :( 
+    getLocalData = function(exporter, importer, year){
+        this.apiCall.getExportsBetweenTwoCountries(exporter.name, importer.name, year).then(bilateralData =>{
+            console.log(bilateralData);
+        })
+        .catch(err => {
+            UIControl.message(err);
+        });
     }
 
     getGlobalData = function(country,year){
-        const apiCall = new oecCall;
-        apiCall.getGlobalImportsAndExports(country.iso, year).then(importsAndExports =>{            
+        this.apiCall.getGlobalImportsAndExports(country.iso, year).then(importsAndExports =>{            
             let globalTradeFlow = importsAndExports.data;
             this.bundleDataByChapters(globalTradeFlow,country);
             UIControl.displayData(country);

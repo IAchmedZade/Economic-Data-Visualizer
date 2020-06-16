@@ -140,7 +140,7 @@ class UIControl{
         setTimeout(function(){
             nameAndYear[3].innerHTML = '';
             UIControl.removeLoadingBar();
-        },3000);
+        },5000);
     }
 }
 

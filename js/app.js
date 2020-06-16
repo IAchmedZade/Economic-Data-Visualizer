@@ -4,12 +4,15 @@ const displayBox = document.getElementById('displayBox');
 const updateButton = document.getElementById('updateBtn');
 const tradeMode = document.getElementById("tradeMode");
 
+
+
 var worldMap;
 var countries = [];
 const tradeFlow = new tradeFlowManager();
 
 document.onreadystatechange = function () {
     if(document.readyState == 'complete'){
+        document.getElementById('setYear').value = 2003;
         worldMap = map.getSVGDocument();
         main();
     }

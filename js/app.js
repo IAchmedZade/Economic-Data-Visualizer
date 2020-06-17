@@ -37,6 +37,7 @@ function main(){
         tradeFlow.itemIds= localData.goodsData.data;
         tradeFlow.itemIds.forEach(element=> {if(element["id"].length <=2) tradeFlow.shortIds.push(element);});
         localData.countryData.forEach(element=>{
+            if(element.name == "Alaska") return false;
             let svgHandle = element.svgItem;
             let countrySVG = worldMap.getElementById(svgHandle);
             let handle = new country({

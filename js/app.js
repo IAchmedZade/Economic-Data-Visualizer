@@ -23,7 +23,7 @@ let nameAndYear = [document.getElementById('name'),
 
 
 
-async function getLocalData(){
+async function getUIrelatedData(){
     const countryIds = await fetch('data/countryIds.txt');
     const response = await countryIds.json();
 
@@ -33,7 +33,7 @@ async function getLocalData(){
 }
 
 function main(){
-    getLocalData().then(function(localData){
+    getUIrelatedData().then(function(localData){
         tradeFlow.itemIds= localData.goodsData.data;
         tradeFlow.itemIds.forEach(element=> {if(element["id"].length <=2) tradeFlow.shortIds.push(element);});
         localData.countryData.forEach(element=>{

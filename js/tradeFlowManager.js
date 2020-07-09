@@ -11,13 +11,63 @@ class country{
 
 class UIControl{
     
-    static displayData(country){
+    static displayRelationalData(exporter, importer){
+        UIControl.removeLoadingBar();
+        nameAndYear[0].style.color = 'white';
+        nameAndYear[0].innerHTML = exporter.name;
+        UIControl.createCanvas();
+        let ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
+        UIControl.createBarChart(ctx,exporter, importer);
+    }
+
+    static createBarChart(ctx, exporter, importer){
+        let values = []; let names = [];
+        exporter.exports.forEach(element =>{
+            values.push(element.value/1000000000);
+            names.push(element.name);
+        });
+        let barChar = new Chart(ctx, {
+                type: 'bar',
+                data:{
+                    datasets:[{
+                        data: values,
+                        backgroundColor: ['#F2F3F4', '#222222', '#F3C300', '#875692', '#F38400',
+                                        '#A1CAF1', '#BE0032', '#C2B280', '#848482', '#008856',
+                                        '#E68FAC', '#0067A5', '#F99379', '#604E97', '#F6A600', 
+                                        '#B3446C', '#DCD300', '#882D17', '#8DB600', '#654522', 
+                                        '#E25822', '#2B3D26']
+                    }],
+                    labels: names
+                },
+                options:{
+                    responsive: false,
+                    legend:{
+                        display: false
+                    },
+                    scales:{
+                        yAxes:[
+                            {
+                                display: false
+                            }
+                        ]
+                    },
+                    title: {
+                        display: true,
+                        text: exporter.name + ' ' + importer.name
+                    }
+                }
+            }
+        );
+    }
+
+
+    static displayGlobalData(country){
         UIControl.removeLoadingBar();
         nameAndYear[0].style.color = 'white';
         nameAndYear[0].innerHTML = country.name;        
         UIControl.createCanvas();
         let ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
-        UIControl.createChart(ctx,country);
+        UIControl.createPieChart(ctx,country);
         
     }
 
@@ -26,12 +76,12 @@ class UIControl{
         displayBox.appendChild(document.createElement("canvas"));        
     }
 
-    static createChart(ctx,country){
+    static createPieChart(ctx,country){
         let values = []; let names = [];
         country.exports.forEach(element =>{
             values.push(element.value);
             names.push(element.name);
-        });        
+        });
         let pieChart = new Chart(ctx,{
                 type: 'pie',
                 data: {
@@ -78,7 +128,7 @@ class UIControl{
             }
         }
         else{
-            UIControl.displayData(handle);
+            UIControl.displayGlobalData(handle);
         }
     }
 
@@ -180,7 +230,7 @@ class tradeFlowManager{
         }
         else{
             let mostRecent = this.activeCountries[this.activeCountries.length-1]
-            UIControl.displayData(mostRecent);
+            UIControl.displayGlobalData(mostRecent);
         }
     }
 
@@ -203,16 +253,16 @@ class tradeFlowManager{
                 }
             }
             */
+           this.getLocalData(this.activeCountries[0],this.activeCountries[1], 2012);
             UIControl.removeLoadingBar();
-            UIControl.message("Trade Mode is still under construction! PLease use global mode for now.");
+            //UIControl.message("Trade Mode is still under construction! PLease use global mode for now.");
         }
     }
 
-
-    // API still exhibiting strange behaviour :( 
     getLocalData = function(exporter, importer, year){
-        this.apiCall.getExportsBetweenTwoCountries(exporter.name, importer.name, year).then(bilateralData =>{
-            console.log(bilateralData);
+        this.apiCall.getExportsBetweenTwoCountries(exporter.iso, importer.iso, year).then(bilateralData =>{
+            this.bundleDataByChaptersHelper(bilateralData, exporter.exports, importer.imports);
+            UIControl.displayRelationalData(exporter, importer);
         })
         .catch(err => {
             UIControl.message(err);
@@ -223,7 +273,7 @@ class tradeFlowManager{
         this.apiCall.getGlobalImportsAndExports(country.iso, year).then(importsAndExports =>{            
             let globalTradeFlow = importsAndExports.data;
             this.bundleDataByChapters(globalTradeFlow,country);
-            UIControl.displayData(country);
+            UIControl.displayGlobalData(country);
         })
         .catch(err =>{
             UIControl.unselectCountry(null,country);
@@ -231,12 +281,12 @@ class tradeFlowManager{
         });
     }
 
-    bundleDataByChapters = function(globalTradeFlow,country){
+    bundleDataByChapters = function(rawTradingData,country){
         
         country.exports = this.generateEmptyGoodArray();
         country.imports = this.generateEmptyGoodArray();
         
-        this.bundleDataByChaptersHelper(globalTradeFlow, country.exports, country.imports);
+        this.bundleDataByChaptersHelper(rawTradingData, country.exports, country.imports);
         
         
     }
@@ -247,10 +297,10 @@ class tradeFlowManager{
         return GoodArray;
     }
 
-    bundleDataByChaptersHelper = function(globalTradeFlow, exports,imports){
+    bundleDataByChaptersHelper = function(rawTradingData, exports,imports){
         for(let j = 0; j < this.shortIds.length; j++){
-            for(let i = 0; i < globalTradeFlow.length; i++){
-                let candidate = globalTradeFlow[i];
+            for(let i = 0; i < rawTradingData.length; i++){
+                let candidate = rawTradingData[i];
                 if(!isNaN(candidate.export_val) && candidate.hs02_id.substr(0,2) == this.shortIds[j].id){
                     exports[j].value += candidate.export_val;
                 }

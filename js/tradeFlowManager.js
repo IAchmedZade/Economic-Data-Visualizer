@@ -245,22 +245,16 @@ class tradeFlowManager{
             this.getGlobalData(country,year);
         }
         else{
-            //Implement trade mode furhter!            
-            /*year = 2012;
-            for(let i = 0; i < this.activeCountries.length-1; i++){
-                for(let j = i+1; j < this.activeCountries.length; j++){
-                    this.getLocalData(this.activeCountries[i],this.activeCountries[j], year);
-                }
-            }
-            */
-           this.getLocalData(this.activeCountries[0],this.activeCountries[1], 2012);
+            console.log(country.name);
+            this.getLocalData(this.activeCountries[0],country, year);
             UIControl.removeLoadingBar();
-            //UIControl.message("Trade Mode is still under construction! PLease use global mode for now.");
         }
     }
 
     getLocalData = function(exporter, importer, year){
         this.apiCall.getExportsBetweenTwoCountries(exporter.iso, importer.iso, year).then(bilateralData =>{
+            console.log(bilateralData);
+            importer.imports = this.generateEmptyGoodArray();
             this.bundleDataByChaptersHelper(bilateralData, exporter.exports, importer.imports);
             UIControl.displayRelationalData(exporter, importer);
         })

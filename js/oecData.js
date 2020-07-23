@@ -27,6 +27,7 @@ class oecCall{
 
     async getExportsBetweenTwoCountries(origin, destination, year){
         const exportPromise = await fetch(`https://legacy.oec.world/hs02/export/${year}/${origin}/${destination}/all`);
+        console.log(year);
         //console.log('ApiCall getExportsBetweenTwoCountries Response:' , exportPromise);
         const exports = await exportPromise.json();
 

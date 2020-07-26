@@ -245,7 +245,7 @@ class tradeFlowManager{
             this.getGlobalData(country,year);
         }
         else{
-            console.log(country.name);
+            //console.log(country.name);
             this.getLocalData(this.activeCountries[0],country, year);
             UIControl.removeLoadingBar();
         }
@@ -259,6 +259,7 @@ class tradeFlowManager{
             UIControl.displayRelationalData(exporter, importer);
         })
         .catch(err => {
+            console.log(err);
             UIControl.message(err);
         });
     }
